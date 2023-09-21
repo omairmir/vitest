@@ -1,30 +1,35 @@
 <script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
+import { RouterLink, RouterView } from 'vue-router'
+import PLogo from '@/components/ui/PLogo.vue'
+import PButton from '@/components/ui/PButton.vue'
+
+
 </script>
 
 <template>
-  <div>
-    <a href="https://vitejs.dev" target="_blank">
-      <img src="/vite.svg" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://vuejs.org/" target="_blank">
-      <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-    </a>
+  <header >
+    <div class="bg-white w-full flex items-center justify-between bg-usual px-4 py-3 fixed top-0">
+        <PLogo></PLogo>
+        <div class="flex gap-3">
+          <RouterLink to="/" v-slot="{isActive,navigate}" >
+            <PButton variant="navigate" color="primary" :active="isActive" :clickHandler="(e: MouseEvent)=>{navigate();e.preventDefault();}">Intro</PButton>
+          </RouterLink>
+          <RouterLink to="/about" v-slot="{isActive,navigate}">
+            <PButton variant="navigate" color="primary" :active="isActive" :clickHandler="(e: MouseEvent)=>{navigate();e.preventDefault();}">Solutions</PButton>
+          </RouterLink>
+          <RouterLink to="/dashboard" v-slot="{isActive,navigate}">
+            <PButton variant="navigate" color="black" :active="isActive" :clickHandler="(e: MouseEvent)=>{navigate();e.preventDefault();}">Dashboard</PButton>
+          </RouterLink>
+        </div>
+    </div>
+  </header>
+  <div class="bg-usual w-full h-screen max-h-screen fixed top-[60px]" style="height: calc(100vh - 60px)">
+    <RouterView />
   </div>
-  <HelloWorld msg="Vite + Vue" />
+  
+
 </template>
 
 <style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
-}
+
 </style>

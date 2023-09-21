@@ -1,48 +1,77 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-
-defineProps<{ msg: string }>()
-
-const count = ref(0)
-const fetchPost = async () => {
-  const res = await fetch('http://localhost:3000/api/posts',{
-    method:'GET',
-    mode:'no-cors',
-    headers: {}
-  })
-  if(res)
-  console.log('reached',res.json)
+import { useQuery, QueryClient, useQueryClient } from "@tanstack/vue-query";
+import PSpinner from '@/components/ui/PSpinner.vue'
+import { fetcher } from "@/mixos";
+import PButton from "./ui/PButton.vue";
+defineProps<{ msg: string }>();
+const client = new QueryClient({
+  defaultOptions: {
+    queries: {
+      cacheTime: 2,
+    },
+  },
+});
+interface PostDetils {
+  id: number,
+  title: string
 }
+interface Post{
+  status: number,
+  posts:PostDetils[]
+}
+// type Post = { status: string; posts:Array  };
+const fetchAll = async (): Promise<Post> => {
+  try {
+    const res = await fetcher.get("/api/posts");
+    return res.data
+  } 
+  catch (err) {
+    console.debug('Error in fetch Post', err)
+    // return `Error in fetch Post:'${err}`
+    return {status:401,posts:[]};
+  }
+};
+const { isLoading, isSuccess, data } = useQuery({
+  queryKey: ["first"],
+  queryFn: fetchAll,
+  refetchOnWindowFocus: false,
+});
 </script>
 
 <template>
-  <h1>{{ msg }}</h1>
-
-  <div class="card">
-    <button type="button" @click="count++">count is {{ count }}</button>
-    <button type="button" @click="fetchPost">Fetch</button>
-    <p>
-      Edit
-      <code>components/HelloWorld.vue</code> to test HMR
-    </p>
+  <div class="greetings p-8">
+    <h1 class="green">{{ msg }}</h1>
+    <h2 v-if="isLoading" class="green text-xl"><PButton :disabled="true"><PSpinner></PSpinner></PButton></h2>
+    <template v-if="isSuccess">
+      <code>
+      <template v-for="post in data?.posts">
+       {{ post }}
+      </template>
+    </code>
+    </template>
+    <!-- <h4 class="text-gray-400 text-2xl my-2">Using tailwind</h4> -->
   </div>
-
-  <p>
-    Check out
-    <a href="https://vuejs.org/guide/quick-start.html#local" target="_blank"
-      >create-vue</a
-    >, the official Vue + Vite starter
-  </p>
-  <p>
-    Install
-    <a href="https://github.com/vuejs/language-tools" target="_blank">Volar</a>
-    in your IDE for a better DX
-  </p>
-  <p class="read-the-docs">Click on the Vite and Vue logos to learn more</p>
 </template>
 
 <style scoped>
-.read-the-docs {
-  color: #888;
+h1 {
+  font-weight: 500;
+  font-size: 2.6rem;
+  position: relative;
+  top: -10px;
+}
+
+h3 {
+  font-size: 1.2rem;
+}
+
+.greetings {
+  text-align: center;
+}
+
+@media (min-width: 1024px) {
+  .greetings {
+    text-align: left;
+  }
 }
 </style>
