@@ -7,27 +7,63 @@ port = 3000;
 app.use(bodyParser.json());
 const cors = require('cors');
 const corsOptions = {
-  origin: 'http://localhost:8080/', // Replace with the allowed domain(s)
-  methods: ['GET', 'POST'], // Specify the HTTP methods allowed
+  origin: 'http://localhost:8080', // Replace with the allowed domain(s)
+  methods: ['GET', 'POST', 'PUT'], // Specify the HTTP methods allowed
 };
 
 app.use(cors(corsOptions));
-// app.use(function(req, res, next) {
-//   res.header("Access-Control-Allow-Origin", "http://localhost:8080/"); // update to match the domain you will make the request from
-//   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-//   next();
-// });
 app.get('/', (req,res) => {
     // res.sendFile(path.join(__dirname,'../my-app/index.html'));
   res.send('APi 1.0 is Up and Running!')
 });
   
 app.get('/api/posts', async (req, res) => {
-  // req.header('Access-Control-Allow-Origin',"http://localhost:5173/")
+  console.log('GET->api/posts')
   const module = await require("./posts.json");
-  console.log(module.posts)
-  res.status(200).send({ status:200,posts:module.posts });
+  setTimeout(() => {res.send({ status:200,posts:module.posts }); },3000)
 })
+
+
+app.get('/api/cards', async (req, res) => {
+  console.log('GET->api/cards')
+  const module = await require("./cards.json");
+  const cards = module.cards
+  const offset = parseInt(req.query.offset || '0');
+  const limit = parseInt(req.query.limit || '3');
+
+  // Calculate the start and end indexes for the batch
+  const startIndex = offset;
+  const endIndex = Math.min(startIndex + limit, cards.length);
+
+  // Extract the batch of cards
+  const batch = cards.slice(startIndex, endIndex);
+
+  // Calculate the next offset
+  const nextCursor = endIndex < cards.length ? endIndex : undefined;
+  setTimeout(() => {
+    res.send(
+      {
+        cards: batch,
+        nextCursor: nextCursor,
+        status:200
+  });},3000)
+  
+});
+
+app.get('/api/cards/:id', async (req, res) => {
+  const module = await require("./cards.json");
+  const cards = module.cards
+  const cardId = parseInt(req.params.id);
+  // Find the project by ID
+  const card = cards.find((p) => p.id === cardId);
+
+  if (!card) {
+    res.send({ status:404,error: 'Card not found' });
+  } else {
+    res.send({ data: card });
+  }
+});
+
 
 app.listen(port, () => {
     console.log(`Server listening on the port::${port}`);
